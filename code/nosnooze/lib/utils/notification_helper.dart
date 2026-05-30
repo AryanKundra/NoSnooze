@@ -1,84 +1,132 @@
+import 'package:alarm/alarm.dart' as alarm_pkg;
+import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
+import 'package:flutter_timezone/flutter_timezone.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../models/alarm.dart';
- 
+
 class NotificationHelper {
   NotificationHelper._();
- 
-  static final _plugin = FlutterLocalNotificationsPlugin();
- 
-  static const _channel = AndroidNotificationChannel(
-    'nosnooze_alarms',
-    'NoSnooze Alarms',
-    description: 'Alarm notifications that require puzzle dismissal',
-    importance: Importance.max,
-    playSound: true,
-    enableVibration: true,
-  );
- 
+
+  static final FlutterLocalNotificationsPlugin _plugin =
+      FlutterLocalNotificationsPlugin();
+
+
   static Future<void> init() async {
+    if (kIsWeb) return;
+
     tz.initializeTimeZones();
-    const androidSettings =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
-    const iosSettings = DarwinInitializationSettings(
-      requestAlertPermission: true,
-      requestBadgePermission: true,
-      requestSoundPermission: true,
-    );
-    
-    await _plugin.initialize(
-      const InitializationSettings(
-          android: androidSettings, iOS: iosSettings),
-    );
-    final androidPlugin = _plugin
-        .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>();
-    await androidPlugin?.createNotificationChannel(_channel);
-  }
- 
-  static Future<void> scheduleAlarm(Alarm alarm) async {
-    if (!alarm.isEnabled) return;
- 
-    final now = tz.TZDateTime.now(tz.local);
-    var scheduled = tz.TZDateTime(
-        tz.local, now.year, now.month, now.day, alarm.hour, alarm.minute);
-    if (scheduled.isBefore(now)) {
-      scheduled = scheduled.add(const Duration(days: 1));
+    try {
+      final tzInfo = await FlutterTimezone.getLocalTimezone();
+      tz.setLocalLocation(tz.getLocation(tzInfo.identifier));
+    } catch (e) {
+      debugPrint('Timezone error: $e — falling back to UTC.');
+      tz.setLocalLocation(tz.getLocation('UTC'));
     }
- 
-    
-    await _plugin.zonedSchedule(
-      alarm.id.hashCode,
-      'NoSnooze: ${alarm.label}',
-      'Time to wake up! Solve a puzzle to dismiss.',
-      scheduled,
-      NotificationDetails(
-        android: AndroidNotificationDetails(
-          _channel.id,
-          _channel.name,
-          channelDescription: _channel.description,
-          importance: Importance.max,
-          priority: Priority.max,
-          fullScreenIntent: true,
-          ongoing: true,
-          autoCancel: false,
+
+    await _plugin.initialize(
+      settings: const InitializationSettings(
+        android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+        iOS: DarwinInitializationSettings(
+          requestAlertPermission: true,
+          requestBadgePermission: true,
+          requestSoundPermission: true,
         ),
-        iOS: const DarwinNotificationDetails(
-            presentAlert: true, presentSound: true),
       ),
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
-      payload: alarm.id,
     );
   }
- 
-  static Future<void> cancelAlarm(Alarm alarm) async {
-    await _plugin.cancel(alarm.id.hashCode);
+
+
+  static Future<void> requestPermissions() async {
+    if (kIsWeb) return;
+
+    if (await Permission.notification.isDenied) {
+      await Permission.notification.request();
+    }
+    if (!(await Permission.scheduleExactAlarm.isGranted)) {
+      await Permission.scheduleExactAlarm.request();
+    }
   }
- 
+
+
+  static Future<void> scheduleAllAlarms(List<Alarm> alarms) async {
+    if (kIsWeb) return;
+    await alarm_pkg.Alarm.stopAll();
+    for (final a in alarms) {
+      if (a.isEnabled) await _scheduleNext(a);
+    }
+  }
+
+  static Future<void> scheduleNext(Alarm alarm) async {
+    if (kIsWeb) return;
+    if (!alarm.isEnabled) return;
+    await _scheduleNext(alarm);
+  }
+
+  static Future<void> _scheduleNext(Alarm alarm) async {
+    final next = _nextTrigger(alarm);
+    if (next == null) return;
+    await _scheduleAt(alarm, next);
+  }
+
+  static DateTime? _nextTrigger(Alarm alarm, [DateTime? now]) {
+    final ref = now ?? tz.TZDateTime.now(tz.local);
+    final base = DateTime(
+        ref.year, ref.month, ref.day, alarm.hour, alarm.minute);
+
+    if (alarm.repeatDays.isEmpty) {
+      return base.isAfter(ref) ? base : base.add(const Duration(days: 1));
+    }
+
+    for (var i = 0; i < 8; i++) {
+      final candidate = base.add(Duration(days: i));
+      final idx = (candidate.weekday - 1) % 7;
+      if (alarm.repeatDays.contains(Weekday.values[idx]) &&
+          candidate.isAfter(ref)) {
+        return candidate;
+      }
+    }
+    return null;
+  }
+
+  static Future<void> _scheduleAt(Alarm alarm, DateTime when) async {
+    final id = alarm.id.hashCode & 0x7FFFFFFF;
+
+    final settings = alarm_pkg.AlarmSettings(
+      id: id,
+      dateTime: when,
+      assetAudioPath: null,
+      loopAudio: true,
+      vibrate: true,
+      androidFullScreenIntent: true,
+      payload: alarm.id,
+      volumeSettings: const alarm_pkg.VolumeSettings.fixed(volume: 1.0),
+      notificationSettings: alarm_pkg.NotificationSettings(
+        title: 'NoSnooze: ${alarm.label.isEmpty ? 'Alarm' : alarm.label}',
+        body: 'Solve the puzzle to wake up!',
+        stopButton: null,
+      ),
+    );
+
+    try {
+      await alarm_pkg.Alarm.set(alarmSettings: settings);
+      debugPrint('✅ Alarm "${alarm.label}" scheduled for $when');
+    } catch (e) {
+      debugPrint('❌ Failed to schedule alarm "${alarm.label}": $e');
+    }
+  }
+
+
+  static Future<void> cancelAlarm(Alarm alarm) async {
+    if (kIsWeb) return;
+    final id = alarm.id.hashCode & 0x7FFFFFFF;
+    await alarm_pkg.Alarm.stop(id);
+  }
+
   static Future<void> cancelAll() async {
-    await _plugin.cancelAll();
+    if (kIsWeb) return;
+    await alarm_pkg.Alarm.stopAll();
   }
 }

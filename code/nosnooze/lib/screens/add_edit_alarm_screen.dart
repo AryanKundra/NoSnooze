@@ -6,13 +6,21 @@ import '../models/alarm.dart';
 import '../providers/alarm_provider.dart';
 import '../generated/app_localizations.dart';
 
-class AddEditAlarmScreen extends StatefulWidget{
+const _kBg       = Color(0xFF000000);
+const _kSurface  = Color(0xFF1C1C1E);
+const _kSurface2 = Color(0xFF2C2C2E);
+const _kDivider  = Color(0xFF38383A);
+const _kOrange   = Color(0xFFFF9F0A);
+const _kGrey     = Color(0xFF8E8E93);
+const _kGreyDark = Color(0xFF636366);
+const _kGreyDeep = Color(0xFF48484A);
+
+class AddEditAlarmScreen extends StatefulWidget {
   final Alarm? existing;
   const AddEditAlarmScreen({super.key, this.existing});
 
   @override
   State<AddEditAlarmScreen> createState() => _AddEditAlarmScreenState();
-
 }
 
 class _AddEditAlarmScreenState extends State<AddEditAlarmScreen> {
@@ -20,30 +28,20 @@ class _AddEditAlarmScreenState extends State<AddEditAlarmScreen> {
 
   late int _hour;
   late int _minute;
-  late String _label;
   late Set<Weekday> _repeatDays;
   late PuzzleType _puzzleType;
 
   final _labelController = TextEditingController();
 
-  static const _bg = Color(0xFF000000);
-  static const _surface = Color(0xFF1C1C1E);
-  static const _surface2 = Color(0xFF2C2C2E);
-  static const _divider = Color(0xFF38383A);
-  static const _orange = Color(0xFFFF9F0A);
-  static const _textPrimary = Colors.white;
-  static const _textSecondary = Color(0xFF8E9E93);
-
   @override
-  void initState(){
+  void initState() {
     super.initState();
     final a = widget.existing;
-    _hour = a?.hour??TimeOfDay.now().hour;
-    _minute = a?.minute??TimeOfDay.now().minute;
-    _label = a?.label??'';
-    _repeatDays = Set.of(a?.repeatDays??{});
-    _puzzleType = a?.puzzleType??PuzzleType.math;
-    _labelController.text = _label;
+    _hour       = a?.hour   ?? TimeOfDay.now().hour;
+    _minute     = a?.minute ?? TimeOfDay.now().minute;
+    _repeatDays = Set.of(a?.repeatDays ?? {});
+    _puzzleType = a?.puzzleType ?? PuzzleType.math;
+    _labelController.text = a?.label ?? '';
   }
 
   @override
@@ -54,51 +52,62 @@ class _AddEditAlarmScreenState extends State<AddEditAlarmScreen> {
 
   void _save() {
     final alarm = Alarm(
-      id: widget.existing?.id??_uuid.v4(),
-      label: _labelController.text.trim(),
-      hour: _hour,
-      minute: _minute,
+      id:         widget.existing?.id ?? _uuid.v4(),
+      label:      _labelController.text.trim(),
+      hour:       _hour,
+      minute:     _minute,
       repeatDays: _repeatDays,
       puzzleType: _puzzleType,
     );
     final provider = context.read<AlarmProvider>();
-    widget.existing != null ? provider.updateAlarm(alarm):provider.addAlarm(alarm);
+    widget.existing != null ? provider.updateAlarm(alarm) : provider.addAlarm(alarm);
     Navigator.pop(context);
-
   }
 
   @override
-  Widget build (BuildContext context) {
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final isEditing = widget.existing != null;
-    return Scaffold (
-      backgroundColor: _bg,
+
+    return Scaffold(
+      backgroundColor: _kBg,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical:4),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               child: Row(
                 children: [
                   CupertinoButton(
                     padding: const EdgeInsets.symmetric(horizontal: 8),
                     onPressed: () => Navigator.pop(context),
-                    child: const Text('Cancel', style: TextStyle(color: _orange,fontSize:17)),
-
+                    child: Text(
+                      l10n.cancel,
+                      style: const TextStyle(color: _kOrange, fontSize: 17),
+                    ),
                   ),
                   const Spacer(),
                   Text(
-                    isEditing?'Edit Alarm' : 'Add Alarm',
+                    isEditing ? l10n.editAlarm : l10n.addAlarm,
                     style: const TextStyle(
-                      color: _textPrimary,
-                      fontSize: 17, fontWeight: FontWeight.w600
+                      color: Colors.white,
+                      fontSize: 17,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                   const Spacer(),
                   CupertinoButton(
                     padding: const EdgeInsets.symmetric(horizontal: 8),
                     onPressed: _save,
-                    child: const Text('Save', style:TextStyle(color: _orange, fontSize: 17, fontWeight: FontWeight.w600,)),
+                    child: Text(
+                      l10n.save,
+                      style: const TextStyle(
+                        color: _kOrange,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -106,10 +115,10 @@ class _AddEditAlarmScreenState extends State<AddEditAlarmScreen> {
 
             Expanded(
               child: ListView(
-                padding:EdgeInsets.zero,
+                padding: EdgeInsets.zero,
                 children: [
                   SizedBox(
-                    height: 220, 
+                    height: 220,
                     child: CupertinoTheme(
                       data: const CupertinoThemeData(
                         brightness: Brightness.dark,
@@ -123,11 +132,11 @@ class _AddEditAlarmScreenState extends State<AddEditAlarmScreen> {
                       ),
                       child: CupertinoDatePicker(
                         mode: CupertinoDatePickerMode.time,
-                        initialDateTime: DateTime(2000,1,1,_hour,_minute),
+                        initialDateTime: DateTime(2000, 1, 1, _hour, _minute),
                         use24hFormat: false,
                         onDateTimeChanged: (dt) {
                           setState(() {
-                            _hour = dt.hour;
+                            _hour   = dt.hour;
                             _minute = dt.minute;
                           });
                         },
@@ -136,21 +145,22 @@ class _AddEditAlarmScreenState extends State<AddEditAlarmScreen> {
                   ),
                   const SizedBox(height: 24),
 
-                  _GroupLabel('ALARM'),
-                  _GroupContainer(children: [
-                    _LabelRow(controller: _labelController),
-                    _RowDivider(),
-                    _RepeatRow(
-                      selected: _repeatDays,
-                      onChanged: (days) => setState(() => _repeatDays = days),
-
-                    ),
-                    _RowDivider(),
-                    _PuzzleRow(
-                      selected: _puzzleType,
-                      onChanged:(t) => setState(() => _puzzleType = t),
-                    ),
-                  ]),
+                  _GroupLabel(l10n.alarmSectionHeader),
+                  _GroupContainer(
+                    children: [
+                      _LabelRow(controller: _labelController),
+                      const _RowDivider(),
+                      _RepeatRow(
+                        selected:  _repeatDays,
+                        onChanged: (days) => setState(() => _repeatDays = days),
+                      ),
+                      const _RowDivider(),
+                      _PuzzleRow(
+                        selected:  _puzzleType,
+                        onChanged: (t) => setState(() => _puzzleType = t),
+                      ),
+                    ],
+                  ),
                   const SizedBox(height: 32),
                 ],
               ),
@@ -160,83 +170,87 @@ class _AddEditAlarmScreenState extends State<AddEditAlarmScreen> {
       ),
     );
   }
-
 }
 
-const _surface2 = Color(0xFF2C2C2E);
-const _orange = Color(0xFFFF9F0A);
-const _textSecondary = Color(0xFF8E8E93);
 
 class _GroupLabel extends StatelessWidget {
   final String text;
   const _GroupLabel(this.text);
+
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
-    child: Text(
-      text, style:const TextStyle(
-        color: Color(0xFF8E8E93),
-        fontSize:13,
-        fontWeight: FontWeight.w400,
-        letterSpacing:0.5,
-      ),
-    ),
-  );
-
-
+        padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+        child: Text(
+          text,
+          style: const TextStyle(
+            color: _kGrey,
+            fontSize: 13,
+            fontWeight: FontWeight.w400,
+            letterSpacing: 0.5,
+          ),
+        ),
+      );
 }
 
-  class _GroupContainer extends StatelessWidget {
-    final List<Widget> children;
-    const _GroupContainer({required this.children});
-    @override
-    Widget build(BuildContext context) => Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1C1C1E),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(children: children),
-    );
-  }
+class _GroupContainer extends StatelessWidget {
+  final List<Widget> children;
+  const _GroupContainer({required this.children});
+
+  @override
+  Widget build(BuildContext context) => Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16),
+        decoration: BoxDecoration(
+          color: _kSurface,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(children: children),
+      );
+}
 
 class _RowDivider extends StatelessWidget {
+  const _RowDivider();
+
   @override
   Widget build(BuildContext context) => const Padding(
-    padding: EdgeInsets.only(left: 16),
-    child: Divider(color: Color(0xFF38383A), height:1,thickness:0.5),
-  );
+        padding: EdgeInsets.only(left: 16),
+        child: Divider(color: _kDivider, height: 1, thickness: 0.5),
+      );
 }
 
-class _LabelRow extends StatelessWidget{
+class _LabelRow extends StatelessWidget {
   final TextEditingController controller;
   const _LabelRow({required this.controller});
 
   @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.symmetric(horizontal:16,vertical:4),
-    child: Row(
-      children:[
-        const Text('Label',
-          style: TextStyle(color: Colors.white, fontSize:16)),
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      child: Row(
+        children: [
+          Text(
+            l10n.alarmLabel,
+            style: const TextStyle(color: Colors.white, fontSize: 16),
+          ),
           const SizedBox(width: 16),
           Expanded(
-            child:TextField(
+            child: TextField(
               controller: controller,
               textAlign: TextAlign.right,
-              style: const TextStyle(color: Color(0xFF8E8E93), fontSize: 16),
-              decoration: const InputDecoration(
-                hintText: 'Alarm',
-                hintStyle: TextStyle(color: Color(0xFF48484A)),
+              style: const TextStyle(color: _kGrey, fontSize: 16),
+              decoration: InputDecoration(
+                hintText: l10n.alarmLabelHint,
+                hintStyle: const TextStyle(color: _kGreyDeep),
                 border: InputBorder.none,
                 isDense: true,
-                contentPadding: EdgeInsets.symmetric(vertical:12),
+                contentPadding: const EdgeInsets.symmetric(vertical: 12),
               ),
             ),
           ),
-      ],
-    ),
-  );
+        ],
+      ),
+    );
+  }
 }
 
 class _RepeatRow extends StatelessWidget {
@@ -244,47 +258,51 @@ class _RepeatRow extends StatelessWidget {
   final ValueChanged<Set<Weekday>> onChanged;
   const _RepeatRow({required this.selected, required this.onChanged});
 
-  static const _abbr = ['M','T', 'W', 'T', 'F', 'S', 'S'];
-
-  String get _summary {
-    if (selected.isEmpty) return 'Never';
-    if (selected.length == 7) return 'Every Day';
-    final weekdays =  {Weekday.mon, Weekday.tue, Weekday.wed, Weekday.thu, Weekday.fri};
-    final weekend = {Weekday.sat, Weekday.sun};
-    if (selected.containsAll(weekdays) && selected.length == 5) return 'Weekdays';
-    if (selected.containsAll(weekend) && selected.length == 2) return 'Weekends';
-    const names = {
-    Weekday.mon: 'Mon', Weekday.tue: 'Tue', Weekday.wed: 'Wed',Weekday.thu: 'Thu', Weekday.fri: 'Fri', Weekday.sat: 'Sat', Weekday.sun: 'Sun',
+  String _summary(AppLocalizations l10n) {
+    if (selected.isEmpty) return l10n.repeatNever;
+    if (selected.length == 7) return l10n.repeatEveryDay;
+    const weekdays = {Weekday.mon, Weekday.tue, Weekday.wed, Weekday.thu, Weekday.fri};
+    const weekend  = {Weekday.sat, Weekday.sun};
+    if (selected.containsAll(weekdays) && selected.length == 5) return l10n.repeatWeekdays;
+    if (selected.containsAll(weekend)  && selected.length == 2) return l10n.repeatWeekends;
+    final names = {
+      Weekday.mon: l10n.dayMon, Weekday.tue: l10n.dayTue, Weekday.wed: l10n.dayWed,
+      Weekday.thu: l10n.dayThu, Weekday.fri: l10n.dayFri, Weekday.sat: l10n.daySat,
+      Weekday.sun: l10n.daySun,
     };
     return selected.map((d) => names[d]!).join(', ');
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final abbr = [
+      l10n.dayMonAbbr, l10n.dayTueAbbr, l10n.dayWedAbbr, l10n.dayThuAbbr,
+      l10n.dayFriAbbr, l10n.daySatAbbr, l10n.daySunAbbr,
+    ];
+
     return ExpansionTile(
-      tilePadding: const EdgeInsets.symmetric(horizontal: 16),
-      childrenPadding: const EdgeInsets.fromLTRB(16,4,16,12),
-      iconColor: const Color(0xFF636366),
-      backgroundColor: Colors.transparent,
+      tilePadding:              const EdgeInsets.symmetric(horizontal: 16),
+      childrenPadding:          const EdgeInsets.fromLTRB(16, 4, 16, 12),
+      iconColor:                _kGreyDark,
+      backgroundColor:          Colors.transparent,
       collapsedBackgroundColor: Colors.transparent,
-      title: const Text('Repeat',
-      style: TextStyle(color: Colors.white, fontSize: 16)),
+      title: Text(l10n.repeatDays,
+          style: const TextStyle(color: Colors.white, fontSize: 16)),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
-        children:[
-          Text(_summary,
-          style:const TextStyle(color: Color(0xFF8E8E93), fontSize:16)),
+        children: [
+          Text(_summary(l10n), style: const TextStyle(color: _kGrey, fontSize: 16)),
           const SizedBox(width: 6),
-          const Icon(CupertinoIcons.chevron_right,
-          color: Color(0xFF636366), size: 16),
+          const Icon(CupertinoIcons.chevron_right, color: _kGreyDark, size: 16),
         ],
       ),
-      children:[
+      children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: List.generate(7, (i) {
             final day = Weekday.values[i];
-            final on = selected.contains(day);
+            final on  = selected.contains(day);
             return GestureDetector(
               onTap: () {
                 final next = Set.of(selected);
@@ -297,13 +315,13 @@ class _RepeatRow extends StatelessWidget {
                 height: 36,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: on ? _orange: const Color(0xFF2C2C2E),
+                  color: on ? _kOrange : _kSurface2,
                 ),
                 child: Center(
-                  child:Text(
-                    _abbr[i],
+                  child: Text(
+                    abbr[i],
                     style: TextStyle(
-                      color: on?Colors.black:const Color(0xFF8E8E93),
+                      color: on ? Colors.black : _kGrey,
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                     ),
@@ -318,60 +336,62 @@ class _RepeatRow extends StatelessWidget {
   }
 }
 
-class _PuzzleRow extends StatelessWidget{
+class _PuzzleRow extends StatelessWidget {
   final PuzzleType selected;
   final ValueChanged<PuzzleType> onChanged;
   const _PuzzleRow({required this.selected, required this.onChanged});
-  
-  static const _labels = {
-    PuzzleType.math: 'Math',
-    PuzzleType.trivia: 'Trivia',
-    PuzzleType.pattern: 'Pattern',
-  };
 
   @override
-  Widget build(BuildContext context){
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final labels = {
+      PuzzleType.math:    l10n.mathPuzzle,
+      PuzzleType.trivia:  l10n.triviaPuzzle,
+      PuzzleType.pattern: l10n.patternPuzzle,
+    };
+
     return ExpansionTile(
-      tilePadding: const EdgeInsets.symmetric(horizontal: 16),
-      childrenPadding: const EdgeInsets.fromLTRB(16,4,16,16),
-      iconColor: const Color(0xFF636366),
-      backgroundColor: Colors.transparent,
+      tilePadding:              const EdgeInsets.symmetric(horizontal: 16),
+      childrenPadding:          const EdgeInsets.fromLTRB(16, 4, 16, 16),
+      iconColor:                _kGreyDark,
+      backgroundColor:          Colors.transparent,
       collapsedBackgroundColor: Colors.transparent,
-      title: const Text('Puzzle',
-      style: TextStyle(color: Colors.white, fontSize:16)),
+      title: Text(l10n.puzzleType,
+          style: const TextStyle(color: Colors.white, fontSize: 16)),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(_labels[selected]!,
-          style: const TextStyle(color: Color(0xFF8E8E93), fontSize: 16)),
+          Text(labels[selected]!,
+              style: const TextStyle(color: _kGrey, fontSize: 16)),
           const SizedBox(width: 6),
-          const Icon(CupertinoIcons.chevron_right,
-          color: Color(0xFF636366), size: 16),
+          const Icon(CupertinoIcons.chevron_right, color: _kGreyDark, size: 16),
         ],
       ),
       children: [
         CupertinoSlidingSegmentedControl<PuzzleType>(
-          groupValue: selected,
-          backgroundColor: const Color(0xFF2C2C2E),
-          thumbColor: const Color(0xFF636366),
-          children: const{
+          groupValue:      selected,
+          backgroundColor: _kSurface2,
+          thumbColor:      _kGreyDark,
+          children: {
             PuzzleType.math: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 8),
-              child: Text('Math', style: TextStyle(color: Colors.white, fontSize:13)),
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: Text(l10n.mathPuzzle,
+                  style: const TextStyle(color: Colors.white, fontSize: 13)),
             ),
             PuzzleType.trivia: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 8),
-              child: Text('Trivia',
-              style:TextStyle(color: Colors.white, fontSize:13)),
-
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: Text(l10n.triviaPuzzle,
+                  style: const TextStyle(color: Colors.white, fontSize: 13)),
             ),
             PuzzleType.pattern: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 8),
-              child:Text('Pattern',
-              style: TextStyle(color: Colors.white, fontSize:13)),
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: Text(l10n.patternPuzzle,
+                  style: const TextStyle(color: Colors.white, fontSize: 13)),
             ),
           },
-          onValueChanged: (t) {if (t != null) onChanged(t);},
+          onValueChanged: (t) {
+            if (t != null) onChanged(t);
+          },
         ),
       ],
     );

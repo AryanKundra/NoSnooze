@@ -19,12 +19,13 @@ dependencies:
   # Data persistence
   shared_preferences: ^2.3.2
 
-  # Local notifications / alarms
-  flutter_local_notifications: 17.2.3
-  android_alarm_manager_plus: ^5.0.0
+  # Alarm scheduling — handles foreground service, audio, and auto-launch
+  alarm: ^5.2.1
 
-  # FIX: timezone was missing from pubspec — notification_helper.dart imports it
-  timezone: 0.9.4
+  # Notifications (still used for permission requests)
+  flutter_local_notifications: ^21.0.0
+  timezone: ^0.11.0
+  flutter_timezone: ^5.1.0
 
   # Sensors (accelerometer for shake-to-hint)
   sensors_plus: ^7.0.0
@@ -32,7 +33,7 @@ dependencies:
   # Networking (trivia puzzle API)
   http: ^1.2.2
 
-  # Internationalization
+  # Internationalisation
   intl: ^0.20.2
 
   # Audio
@@ -41,7 +42,11 @@ dependencies:
   # UUID generation for alarm IDs
   uuid: ^4.4.2
 
+  # Permissions
+  permission_handler: ^11.4.0
+
   cupertino_icons: ^1.0.8
+  # flutter_ringtone_player removed — alarm package handles audio
 
 dev_dependencies:
   flutter_test:
@@ -51,7 +56,3 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   generate: true
-
-  assets:
-    - assets/sounds/
-    - assets/images/

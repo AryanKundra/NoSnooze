@@ -4,29 +4,21 @@ import 'package:provider/provider.dart';
 import '../providers/alarm_provider.dart';
 import '../models/alarm.dart';
 import 'add_edit_alarm_screen.dart';
+import 'settings_screen.dart';
 import '../generated/app_localizations.dart';
 
-
-class HomeScreen extends StatefulWidget{
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
-
 }
 
 class _HomeScreenState extends State<HomeScreen> {
   bool _editing = false;
 
   static const _bg = Color(0xFF000000);
-  static const _surface = Color(0xFF1C1C1E);
-  static const _divider = Color(0xFF38383A);
-  static const _textPrimary = Colors.white;
-  static const _textSecondary = Color(0xFF8E8E93);
   static const _orange = Color(0xFFFF9F0A);
-  static const _green = Color(0xFF34C759);
-  static const _red = Color(0xFFFF3B30);
-
 
   @override
   Widget build(BuildContext context) {
@@ -51,19 +43,26 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               onUndo: () => context.read<AlarmProvider>().undo(),
               onRedo: () => context.read<AlarmProvider>().redo(),
+              onSettings: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const SettingsScreen()),
+              ),
             ),
             Expanded(
-              child: alarms.isEmpty ? _EmptyState(l10n: l10n) : _AlarmList(
-                alarms: alarms,
-                editing: _editing, 
-                onToggle: (id) => context.read<AlarmProvider>().toggleAlarm(id),
-                onDelete:(id) => context.read<AlarmProvider>().deleteAlarm(id),
-                onTap: (alarm) => Navigator.push(
-                  context,
-                  CupertinoPageRoute(builder: (_) => AddEditAlarmScreen(existing: alarm),
-                  ),
-                ),
-              ),
+              child: alarms.isEmpty
+                  ? _EmptyState(l10n: l10n)
+                  : _AlarmList(
+                      alarms: alarms,
+                      editing: _editing,
+                      onToggle: (id) => context.read<AlarmProvider>().toggleAlarm(id),
+                      onDelete: (id) => context.read<AlarmProvider>().deleteAlarm(id),
+                      onTap: (alarm) => Navigator.push(
+                        context,
+                        CupertinoPageRoute(
+                          builder: (_) => AddEditAlarmScreen(existing: alarm),
+                        ),
+                      ),
+                    ),
             ),
           ],
         ),
@@ -72,7 +71,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-class _NavBar extends StatelessWidget{
+class _NavBar extends StatelessWidget {
   final bool editing;
   final bool canUndo;
   final bool canRedo;
@@ -80,6 +79,7 @@ class _NavBar extends StatelessWidget{
   final VoidCallback onAdd;
   final VoidCallback onUndo;
   final VoidCallback onRedo;
+  final VoidCallback onSettings;
 
   const _NavBar({
     required this.editing,
@@ -89,17 +89,19 @@ class _NavBar extends StatelessWidget{
     required this.onAdd,
     required this.onUndo,
     required this.onRedo,
+    required this.onSettings,
   });
 
   static const _orange = Color(0xFFFF9F0A);
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
-      children:[
+      children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8,16, 0),
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
           child: Row(
             children: [
               CupertinoButton(
@@ -107,7 +109,7 @@ class _NavBar extends StatelessWidget{
                 minSize: 44,
                 onPressed: onEditToggle,
                 child: Text(
-                  editing? 'Done' : 'Edit',
+                  editing ? l10n.done : l10n.edit,
                   style: const TextStyle(
                     color: _orange,
                     fontSize: 17,
@@ -115,33 +117,40 @@ class _NavBar extends StatelessWidget{
                   ),
                 ),
               ),
-              if (editing) ... [
+              if (editing) ...[
                 const SizedBox(width: 4),
-                  CupertinoButton(
-                    padding: EdgeInsets.zero,
-                    minSize: 36,
-                    onPressed: canUndo ? onUndo : null,
-                    child: Icon(
-                      CupertinoIcons.arrow_uturn_left,
-                      color: canUndo ? _orange : const Color(0xFF48484A),
-                      size: 20,
+                CupertinoButton(
+                  padding: EdgeInsets.zero,
+                  minSize: 36,
+                  onPressed: canUndo ? onUndo : null,
+                  child: Icon(
+                    CupertinoIcons.arrow_uturn_left,
+                    color: canUndo ? _orange : const Color(0xFF48484A),
+                    size: 20,
+                  ),
                 ),
-              ),
                 CupertinoButton(
                   padding: EdgeInsets.zero,
                   minSize: 36,
                   onPressed: canRedo ? onRedo : null,
-                  child:Icon(
+                  child: Icon(
                     CupertinoIcons.arrow_uturn_right,
                     color: canRedo ? _orange : const Color(0xFF48484A),
-                    size:20,
+                    size: 20,
                   ),
                 ),
               ],
               const Spacer(),
               CupertinoButton(
                 padding: EdgeInsets.zero,
-                minSize:44,
+                minSize: 44,
+                onPressed: onSettings,
+                child: const Icon(Icons.settings, color: _orange, size: 24),
+              ),
+              const SizedBox(width: 8),
+              CupertinoButton(
+                padding: EdgeInsets.zero,
+                minSize: 44,
                 onPressed: onAdd,
                 child: const Icon(
                   CupertinoIcons.add_circled_solid,
@@ -152,20 +161,19 @@ class _NavBar extends StatelessWidget{
             ],
           ),
         ),
-
-        const Padding(
-          padding: EdgeInsets.fromLTRB(20, 4, 20, 8),
-          child: Text('Alarms',
-          style:TextStyle(
-            color: Colors.white,
-            fontSize: 34,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 0.3,
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 4, 20, 8),
+          child: Text(
+            l10n.alarmsTab,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 34,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 0.3,
+            ),
           ),
-          ),
-          ),
-          const Divider(color: Color(0xFF38383A), height: 1, thickness: 0.5),
-
+        ),
+        const Divider(color: Color(0xFF38383A), height: 1, thickness: 0.5),
       ],
     );
   }
@@ -185,6 +193,7 @@ class _AlarmList extends StatelessWidget {
     required this.onDelete,
     required this.onTap,
   });
+
   @override
   Widget build(BuildContext context) {
     return ListView.separated(
@@ -192,11 +201,7 @@ class _AlarmList extends StatelessWidget {
       itemCount: alarms.length,
       separatorBuilder: (_, __) => const Padding(
         padding: EdgeInsets.only(left: 76),
-        child: Divider(
-          color: Color(0xFF38383A),
-          height: 1,
-          thickness: 0.5,
-        ),
+        child: Divider(color: Color(0xFF38383A), height: 1, thickness: 0.5),
       ),
       itemBuilder: (ctx, i) => _AlarmRow(
         alarm: alarms[i],
@@ -208,7 +213,6 @@ class _AlarmList extends StatelessWidget {
     );
   }
 }
-
 
 class _AlarmRow extends StatefulWidget {
   final Alarm alarm;
@@ -229,142 +233,163 @@ class _AlarmRow extends StatefulWidget {
   State<_AlarmRow> createState() => _AlarmRowState();
 }
 
-class _AlarmRowState extends State<_AlarmRow> with SingleTickerProviderStateMixin {
+class _AlarmRowState extends State<_AlarmRow>
+    with SingleTickerProviderStateMixin {
   late AnimationController _ctrl;
   late Animation<double> _slideIn;
 
   @override
   void initState() {
     super.initState();
-    _ctrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 250),
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 250),
     );
     _slideIn = CurvedAnimation(parent: _ctrl, curve: Curves.easeOut);
-    
   }
 
   @override
-  void didUpdateWidget(_AlarmRow old){
+  void didUpdateWidget(_AlarmRow old) {
     super.didUpdateWidget(old);
     widget.editing ? _ctrl.forward() : _ctrl.reverse();
   }
 
   @override
-  void dispose(){
+  void dispose() {
     _ctrl.dispose();
     super.dispose();
-
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final a = widget.alarm;
     final dimmed = !a.isEnabled;
 
     return GestureDetector(
-      onTap: widget.editing? widget.onTap: null,
+      onTap: widget.editing ? widget.onTap : null,
       behavior: HitTestBehavior.opaque,
       child: Container(
         color: const Color(0xFF1C1C1E),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical:14),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          SizeTransition(
-            sizeFactor: _slideIn,
-            axis: Axis.horizontal,
-            child: Padding(
-              padding: const EdgeInsets.only(right: 12),
-              child: GestureDetector(
-                onTap: widget.onDelete,
-                child: Container(
-                  width: 24,
-                  height: 24,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFFF3B30),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.remove,
-                    color: Colors.white,
-                    size: 16,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            SizeTransition(
+              sizeFactor: _slideIn,
+              axis: Axis.horizontal,
+              child: Padding(
+                padding: const EdgeInsets.only(right: 12),
+                child: GestureDetector(
+                  onTap: widget.onDelete,
+                  child: Container(
+                    width: 24,
+                    height: 24,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFFF3B30),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.remove, color: Colors.white, size: 16),
                   ),
                 ),
               ),
             ),
-          ),
-
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                RichText(
-                  text: TextSpan(
-                    style: TextStyle(
-                      fontSize: 52,
-                      fontWeight: FontWeight.w200,
-                      color: dimmed ? const Color(0xFF48484A) : Colors.white,
-                      letterSpacing: -1.5,
-                      height: 1.0,
-                    ),
-                    children: [
-                      TextSpan(text: _hourMinute(a)),
-                      TextSpan(
-                        text: ' ${_period(a)}',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w300,
-                          color: dimmed ? const Color(0xFF48484A) : const Color(0xFFAEAEB2),
-                          letterSpacing: 0,
-                        ),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  RichText(
+                    text: TextSpan(
+                      style: TextStyle(
+                        fontSize: 52,
+                        fontWeight: FontWeight.w200,
+                        color: dimmed ? const Color(0xFF48484A) : Colors.white,
+                        letterSpacing: -1.5,
+                        height: 1.0,
                       ),
-                    ],
+                      children: [
+                        TextSpan(text: _hourMinute(a)),
+                        TextSpan(
+                          text: ' ${_period(a, l10n)}',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w300,
+                            color: dimmed
+                                ? const Color(0xFF48484A)
+                                : const Color(0xFFAEAEB2),
+                            letterSpacing: 0,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  _subLabel(a),
-                  style: TextStyle(
-                    fontSize:14,
-                    color: dimmed ? const Color(0xFF48484A) : const Color(0xFF8E8E93),
-                    fontWeight: FontWeight.w400,
+                  const SizedBox(height: 2),
+                  Text(
+                    _subLabel(a, l10n),
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: dimmed
+                          ? const Color(0xFF48484A)
+                          : const Color(0xFF8E8E93),
+                      fontWeight: FontWeight.w400,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          if (!widget.editing)
-          CupertinoSwitch(
-            value: a.isEnabled,
-            activeColor: const Color(0xFF34C759),
-            onChanged: (_) => widget.onToggle(),
-
-          ),
-
-          if(widget.editing)
-          const Icon(
-            CupertinoIcons.chevron_right,
-            color: Color(0xFF636366),
-            size: 18,
-          ),
-        ],
+            if (!widget.editing)
+              CupertinoSwitch(
+                value: a.isEnabled,
+                activeColor: const Color(0xFF34C759),
+                onChanged: (_) => widget.onToggle(),
+              ),
+            if (widget.editing)
+              const Icon(
+                CupertinoIcons.chevron_right,
+                color: Color(0xFF636366),
+                size: 18,
+              ),
+          ],
         ),
       ),
     );
   }
 
   String _hourMinute(Alarm a) {
-    final h = a.hour == 0 ? 12 : (a.hour > 12 ? a.hour -12:a.hour);
-    final m = a.minute.toString().padLeft(2,'0');
+    final h = a.hour == 0 ? 12 : (a.hour > 12 ? a.hour - 12 : a.hour);
+    final m = a.minute.toString().padLeft(2, '0');
     return '$h:$m';
   }
 
-  String _period(Alarm a) => a.hour < 12 ? 'AM' : 'PM';
+  String _period(Alarm a, AppLocalizations l10n) =>
+      a.hour < 12 ? l10n.periodAm : l10n.periodPm;
 
-  String _subLabel(Alarm a ){
+  String _subLabel(Alarm a, AppLocalizations l10n) {
     final parts = <String>[];
     if (a.label.isNotEmpty) parts.add(a.label);
-    parts.add(a.repeatLabel);
+    parts.add(_repeatLabel(a, l10n));
     return parts.join(' · ');
+  }
+
+  String _repeatLabel(Alarm a, AppLocalizations l10n) {
+    if (a.repeatDays.isEmpty) return l10n.repeatOnce;
+    if (a.repeatDays.length == 7) return l10n.repeatEveryDay;
+    const weekdays = {Weekday.mon, Weekday.tue, Weekday.wed, Weekday.thu, Weekday.fri};
+    const weekend = {Weekday.sat, Weekday.sun};
+    if (a.repeatDays.containsAll(weekdays) && a.repeatDays.length == 5)
+      return l10n.repeatWeekdays;
+    if (a.repeatDays.containsAll(weekend) && a.repeatDays.length == 2)
+      return l10n.repeatWeekends;
+    final names = {
+      Weekday.mon: l10n.dayMon,
+      Weekday.tue: l10n.dayTue,
+      Weekday.wed: l10n.dayWed,
+      Weekday.thu: l10n.dayThu,
+      Weekday.fri: l10n.dayFri,
+      Weekday.sat: l10n.daySat,
+      Weekday.sun: l10n.daySun,
+    };
+    return a.repeatDays.map((d) => names[d]!).join(', ');
   }
 }
 

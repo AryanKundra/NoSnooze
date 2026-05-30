@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/alarm.dart';
+import '../utils/notification_helper.dart';
 
 class AlarmProvider extends ChangeNotifier {
   static const _storageKey = 'nosnooze_alarms';
@@ -15,12 +16,13 @@ class AlarmProvider extends ChangeNotifier {
   bool get canUndo => _undoStack.isNotEmpty;
   bool get canRedo => _redoStack.isNotEmpty;
 
-  Future<void> load() async{
+  Future<void> load() async {
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getString(_storageKey);
     if (raw != null && raw.isNotEmpty) {
       _alarms = Alarm.listFromJson(raw);
       notifyListeners();
+      await _rescheduleAll();
     }
   }
 
@@ -34,10 +36,15 @@ class AlarmProvider extends ChangeNotifier {
     _redoStack.clear();
   }
 
-  void _apply(List<Alarm> newState) {
+  Future<void> _apply(List<Alarm> newState) async {
     _alarms = newState;
     notifyListeners();
-    _persist();
+    await _persist();
+    await _rescheduleAll();
+  }
+
+  Future<void> _rescheduleAll() async {
+    await NotificationHelper.scheduleAllAlarms(_alarms);
   }
 
   void addAlarm(Alarm alarm) {
@@ -47,29 +54,36 @@ class AlarmProvider extends ChangeNotifier {
 
   void updateAlarm(Alarm updated) {
     _snapshot();
-    _apply(_alarms.map((a) => a.id == updated.id ? updated: a).toList());
+    _apply(_alarms.map((a) => a.id == updated.id ? updated : a).toList());
   }
 
-  void deleteAlarm(String id){
+  void deleteAlarm(String id) {
     _snapshot();
     _apply(_alarms.where((a) => a.id != id).toList());
-
   }
 
   void toggleAlarm(String id) {
     _snapshot();
-    _apply(_alarms.map((a) => a.id == id ? a.copyWith(isEnabled: !a.isEnabled): a).toList());
+    _apply(_alarms.map((a) => a.id == id ? a.copyWith(isEnabled: !a.isEnabled) : a).toList());
   }
 
-  void undo(){
+  void undo() {
     if (!canUndo) return;
     _redoStack.add(List.of(_alarms));
     _apply(_undoStack.removeLast());
   }
 
-  void redo(){
+  void redo() {
     if (!canRedo) return;
     _undoStack.add(List.of(_alarms));
     _apply(_redoStack.removeLast());
+  }
+
+  Alarm? getAlarmById(String id) {
+    try {
+      return _alarms.firstWhere((a) => a.id == id);
+    } catch (_) {
+      return null;
+    }
   }
 }

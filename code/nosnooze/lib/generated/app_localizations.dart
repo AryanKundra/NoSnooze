@@ -146,7 +146,19 @@ abstract class AppLocalizations {
   /// **'Cancel'**
   String get cancel;
 
-  /// Title shown on the alarm dismissal screen
+  /// No description provided for @edit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get edit;
+
+  /// No description provided for @done.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get done;
+
+  /// No description provided for @puzzleTitle.
   ///
   /// In en, this message translates to:
   /// **'Solve to Dismiss'**
@@ -182,6 +194,12 @@ abstract class AppLocalizations {
   /// **'Label'**
   String get alarmLabel;
 
+  /// No description provided for @alarmLabelHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Alarm'**
+  String get alarmLabelHint;
+
   /// No description provided for @alarmTime.
   ///
   /// In en, this message translates to:
@@ -197,7 +215,7 @@ abstract class AppLocalizations {
   /// No description provided for @puzzleType.
   ///
   /// In en, this message translates to:
-  /// **'Puzzle Type'**
+  /// **'Puzzle'**
   String get puzzleType;
 
   /// No description provided for @mathPuzzle.
@@ -241,6 +259,168 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Alarm disabled'**
   String get alarmDisabled;
+
+  /// No description provided for @dismissAlarm.
+  ///
+  /// In en, this message translates to:
+  /// **'Dismiss Alarm'**
+  String get dismissAlarm;
+
+  /// No description provided for @yourAnswer.
+  ///
+  /// In en, this message translates to:
+  /// **'Your answer...'**
+  String get yourAnswer;
+
+  /// No description provided for @language.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get language;
+
+  /// No description provided for @analogClock.
+  ///
+  /// In en, this message translates to:
+  /// **'Analog Clock'**
+  String get analogClock;
+
+  /// No description provided for @alarmSectionHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'ALARM'**
+  String get alarmSectionHeader;
+
+  /// No description provided for @repeatNever.
+  ///
+  /// In en, this message translates to:
+  /// **'Never'**
+  String get repeatNever;
+
+  /// No description provided for @repeatEveryDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Every Day'**
+  String get repeatEveryDay;
+
+  /// No description provided for @repeatWeekdays.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekdays'**
+  String get repeatWeekdays;
+
+  /// No description provided for @repeatWeekends.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekends'**
+  String get repeatWeekends;
+
+  /// No description provided for @repeatOnce.
+  ///
+  /// In en, this message translates to:
+  /// **'Once'**
+  String get repeatOnce;
+
+  /// No description provided for @dayMon.
+  ///
+  /// In en, this message translates to:
+  /// **'Mon'**
+  String get dayMon;
+
+  /// No description provided for @dayTue.
+  ///
+  /// In en, this message translates to:
+  /// **'Tue'**
+  String get dayTue;
+
+  /// No description provided for @dayWed.
+  ///
+  /// In en, this message translates to:
+  /// **'Wed'**
+  String get dayWed;
+
+  /// No description provided for @dayThu.
+  ///
+  /// In en, this message translates to:
+  /// **'Thu'**
+  String get dayThu;
+
+  /// No description provided for @dayFri.
+  ///
+  /// In en, this message translates to:
+  /// **'Fri'**
+  String get dayFri;
+
+  /// No description provided for @daySat.
+  ///
+  /// In en, this message translates to:
+  /// **'Sat'**
+  String get daySat;
+
+  /// No description provided for @daySun.
+  ///
+  /// In en, this message translates to:
+  /// **'Sun'**
+  String get daySun;
+
+  /// No description provided for @dayMonAbbr.
+  ///
+  /// In en, this message translates to:
+  /// **'M'**
+  String get dayMonAbbr;
+
+  /// No description provided for @dayTueAbbr.
+  ///
+  /// In en, this message translates to:
+  /// **'T'**
+  String get dayTueAbbr;
+
+  /// No description provided for @dayWedAbbr.
+  ///
+  /// In en, this message translates to:
+  /// **'W'**
+  String get dayWedAbbr;
+
+  /// No description provided for @dayThuAbbr.
+  ///
+  /// In en, this message translates to:
+  /// **'T'**
+  String get dayThuAbbr;
+
+  /// No description provided for @dayFriAbbr.
+  ///
+  /// In en, this message translates to:
+  /// **'F'**
+  String get dayFriAbbr;
+
+  /// No description provided for @daySatAbbr.
+  ///
+  /// In en, this message translates to:
+  /// **'S'**
+  String get daySatAbbr;
+
+  /// No description provided for @daySunAbbr.
+  ///
+  /// In en, this message translates to:
+  /// **'S'**
+  String get daySunAbbr;
+
+  /// No description provided for @periodAm.
+  ///
+  /// In en, this message translates to:
+  /// **'AM'**
+  String get periodAm;
+
+  /// No description provided for @periodPm.
+  ///
+  /// In en, this message translates to:
+  /// **'PM'**
+  String get periodPm;
+
+  /// No description provided for @alarmNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Alarm not found'**
+  String get alarmNotFound;
 }
 
 class _AppLocalizationsDelegate

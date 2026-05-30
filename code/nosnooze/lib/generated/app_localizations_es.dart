@@ -33,6 +33,12 @@ class AppLocalizationsEs extends AppLocalizations {
   String get cancel => 'Cancelar';
 
   @override
+  String get edit => 'Editar';
+
+  @override
+  String get done => 'Listo';
+
+  @override
   String get puzzleTitle => 'Resuelve para apagar';
 
   @override
@@ -51,13 +57,16 @@ class AppLocalizationsEs extends AppLocalizations {
   String get alarmLabel => 'Etiqueta';
 
   @override
+  String get alarmLabelHint => 'Alarma';
+
+  @override
   String get alarmTime => 'Hora';
 
   @override
   String get repeatDays => 'Repetir';
 
   @override
-  String get puzzleType => 'Tipo de acertijo';
+  String get puzzleType => 'Acertijo';
 
   @override
   String get mathPuzzle => 'Matemáticas';
@@ -79,4 +88,85 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get alarmDisabled => 'Alarma desactivada';
+
+  @override
+  String get dismissAlarm => 'Apagar alarma';
+
+  @override
+  String get yourAnswer => 'Tu respuesta...';
+
+  @override
+  String get language => 'Idioma';
+
+  @override
+  String get analogClock => 'Reloj analógico';
+
+  @override
+  String get alarmSectionHeader => 'ALARMA';
+
+  @override
+  String get repeatNever => 'Nunca';
+
+  @override
+  String get repeatEveryDay => 'Cada día';
+
+  @override
+  String get repeatWeekdays => 'Días laborables';
+
+  @override
+  String get repeatWeekends => 'Fines de semana';
+
+  @override
+  String get repeatOnce => 'Una vez';
+
+  @override
+  String get dayMon => 'Lun';
+
+  @override
+  String get dayTue => 'Mar';
+
+  @override
+  String get dayWed => 'Mié';
+
+  @override
+  String get dayThu => 'Jue';
+
+  @override
+  String get dayFri => 'Vie';
+
+  @override
+  String get daySat => 'Sáb';
+
+  @override
+  String get daySun => 'Dom';
+
+  @override
+  String get dayMonAbbr => 'L';
+
+  @override
+  String get dayTueAbbr => 'M';
+
+  @override
+  String get dayWedAbbr => 'X';
+
+  @override
+  String get dayThuAbbr => 'J';
+
+  @override
+  String get dayFriAbbr => 'V';
+
+  @override
+  String get daySatAbbr => 'S';
+
+  @override
+  String get daySunAbbr => 'D';
+
+  @override
+  String get periodAm => 'AM';
+
+  @override
+  String get periodPm => 'PM';
+
+  @override
+  String get alarmNotFound => 'Alarma no encontrada';
 }
