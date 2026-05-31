@@ -11,9 +11,17 @@ import '../utils/puzzle_service.dart';
 import '../utils/notification_helper.dart';
 import '../generated/app_localizations.dart';
 
+const _kBg      = Color(0xFF000000);
+const _kSurface = Color(0xFF1C1C1E);
+const _kOrange  = Color(0xFFFF9F0A);
+const _kGrey    = Color(0xFF8E8E93);
+const _kDivider = Color(0xFF38383A);
+const _kGreen   = Color(0xFF34C759);
+
 class AlarmDismissScreen extends StatefulWidget {
   final int alarmIntId;
 
+ 
   final String? alarmUuid;
 
   const AlarmDismissScreen({
@@ -54,11 +62,9 @@ class _AlarmDismissScreenState extends State<AlarmDismissScreen>
     _startShakeDetection();
     _pulseController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 800),
+      duration: const Duration(milliseconds: 900),
     )..repeat(reverse: true);
   }
-
-
 
   @override
   void dispose() {
@@ -73,7 +79,6 @@ class _AlarmDismissScreenState extends State<AlarmDismissScreen>
     if (!mounted) return;
 
     final provider = context.read<AlarmProvider>();
-
     Alarm? found;
 
     if (widget.alarmUuid != null && widget.alarmUuid!.isNotEmpty) {
@@ -163,10 +168,12 @@ class _AlarmDismissScreenState extends State<AlarmDismissScreen>
       return PopScope(
         canPop: false,
         child: Scaffold(
-          backgroundColor: const Color(0xFF1A1A2E),
+          backgroundColor: _kBg,
           body: Center(
-            child: Text(AppLocalizations.of(context)!.alarmNotFound,
-                style: const TextStyle(color: Colors.white)),
+            child: Text(
+              l10n.alarmNotFound,
+              style: const TextStyle(color: _kGrey, fontSize: 16),
+            ),
           ),
         ),
       );
@@ -176,16 +183,22 @@ class _AlarmDismissScreenState extends State<AlarmDismissScreen>
       return PopScope(
         canPop: false,
         child: Scaffold(
-          backgroundColor: const Color(0xFF1A1A2E),
+          backgroundColor: _kBg,
           body: Center(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 const Icon(Icons.check_circle_outline,
-                    color: Colors.greenAccent, size: 80),
+                    color: _kGreen, size: 72),
                 const SizedBox(height: 16),
-                Text(l10n.correct,
-                    style: const TextStyle(color: Colors.white, fontSize: 20)),
+                Text(
+                  l10n.correct,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
               ],
             ),
           ),
@@ -196,11 +209,11 @@ class _AlarmDismissScreenState extends State<AlarmDismissScreen>
     return PopScope(
       canPop: false,
       child: Scaffold(
-        backgroundColor: const Color(0xFF1A1A2E),
+        backgroundColor: _kBg,
         body: SafeArea(
           child: _loading
               ? const Center(
-                  child: CircularProgressIndicator(color: Color(0xFFE94560)))
+                  child: CircularProgressIndicator(color: _kOrange))
               : _buildContent(l10n),
         ),
       ),
@@ -209,55 +222,60 @@ class _AlarmDismissScreenState extends State<AlarmDismissScreen>
 
   Widget _buildContent(AppLocalizations l10n) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           AnimatedBuilder(
             animation: _pulseController,
             builder: (_, __) => Icon(
-              Icons.alarm,
-              size: 60,
-              color: Color.lerp(
-                const Color(0xFFE94560),
-                Colors.orangeAccent,
-                _pulseController.value,
-              ),
+              Icons.alarm_rounded,
+              size: 56,
+              color: Color.lerp(_kOrange, Colors.white, _pulseController.value * 0.3),
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
           Text(
             _alarm.label.isEmpty ? l10n.puzzleTitle : _alarm.label,
             textAlign: TextAlign.center,
             style: const TextStyle(
-                color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
+              color: Colors.white,
+              fontSize: 28,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 0.2,
+            ),
           ),
           const SizedBox(height: 4),
           Text(
             l10n.puzzleInstructions,
             textAlign: TextAlign.center,
-            style: const TextStyle(color: Colors.white54, fontSize: 14),
+            style: const TextStyle(color: _kGrey, fontSize: 14),
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 8),
+          const Divider(color: _kDivider, height: 32, thickness: 0.5),
+
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: const Color(0xFF16213E),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: const Color(0xFFE94560).withValues(alpha: 0.4),
-              ),
+              color: _kSurface,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: _kOrange.withValues(alpha: 0.35), width: 1),
             ),
             child: Text(
               _puzzle!.question,
               textAlign: TextAlign.center,
               style: const TextStyle(
-                  color: Colors.white, fontSize: 22, height: 1.5),
+                color: Colors.white,
+                fontSize: 22,
+                height: 1.55,
+                fontWeight: FontWeight.w300,
+              ),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
+
           AnimatedCrossFade(
-            duration: const Duration(milliseconds: 300),
+            duration: const Duration(milliseconds: 250),
             crossFadeState: _hintVisible
                 ? CrossFadeState.showSecond
                 : CrossFadeState.showFirst,
@@ -271,21 +289,22 @@ class _AlarmDismissScreenState extends State<AlarmDismissScreen>
               },
               onPanEnd: (_) => setState(() => _slideOffset = 0),
               child: Container(
-                padding: const EdgeInsets.symmetric(
-                    vertical: 12, horizontal: 16),
+                padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF0F3460),
+                  color: _kSurface,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.swipe_down,
-                        color: Colors.white38, size: 18),
+                    Icon(Icons.swipe_down_rounded,
+                        color: _kGrey.withValues(alpha: 0.6), size: 17),
                     const SizedBox(width: 8),
-                    Text(l10n.shakeHint,
-                        style: const TextStyle(
-                            color: Colors.white38, fontSize: 13)),
+                    Text(
+                      l10n.shakeHint,
+                      style: TextStyle(
+                          color: _kGrey.withValues(alpha: 0.6), fontSize: 13),
+                    ),
                   ],
                 ),
               ),
@@ -293,56 +312,88 @@ class _AlarmDismissScreenState extends State<AlarmDismissScreen>
             secondChild: Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.amber.withValues(alpha: 0.15),
+                color: _kSurface,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                    color: Colors.amber.withValues(alpha: 0.4)),
+                    color: _kOrange.withValues(alpha: 0.5)),
               ),
               child: Text(
                 _puzzle!.hint ?? '',
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.amber, fontSize: 15),
+                style: const TextStyle(color: _kOrange, fontSize: 15),
               ),
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 20),
+
+       
           TextField(
             controller: _answerController,
             autofocus: true,
             keyboardType: _alarm.puzzleType == PuzzleType.math
                 ? TextInputType.number
                 : TextInputType.text,
-            style: const TextStyle(color: Colors.white, fontSize: 20),
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 22,
+              fontWeight: FontWeight.w300,
+              letterSpacing: 1,
+            ),
             decoration: InputDecoration(
               hintText: l10n.yourAnswer,
-              hintStyle: const TextStyle(color: Colors.white30),
+              hintStyle: TextStyle(
+                  color: _kGrey.withValues(alpha: 0.5), fontSize: 16),
               errorText: _errorMessage,
+              errorStyle: const TextStyle(color: _kOrange, fontSize: 13),
               filled: true,
-              fillColor: const Color(0xFF16213E),
+              fillColor: _kSurface,
+              contentPadding:
+                  const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(14),
                 borderSide: BorderSide.none,
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: const BorderSide(color: _kOrange, width: 1.5),
+              ),
+              errorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: const BorderSide(color: _kOrange, width: 1),
+              ),
+              focusedErrorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: const BorderSide(color: _kOrange, width: 1.5),
               ),
             ),
             onSubmitted: (_) => _checkAnswer(),
           ),
           const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: _checkAnswer,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFE94560),
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14)),
-            ),
-            child: Text(
-              l10n.dismissAlarm,
-              style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold),
+
+        
+          SizedBox(
+            height: 54,
+            child: ElevatedButton(
+              onPressed: _checkAnswer,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _kOrange,
+                foregroundColor: Colors.black,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14)),
+              ),
+              child: Text(
+                l10n.dismissAlarm,
+                style: const TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.3,
+                ),
+              ),
             ),
           ),
+          const SizedBox(height: 8),
         ],
       ),
     );
