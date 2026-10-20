@@ -125,4 +125,4 @@ Getting alarms to fire reliably on Android took more work than expected. A few o
 
 ## Status
 
-Actively developed. Android is the supported platform.
+Android is the supported platform.
