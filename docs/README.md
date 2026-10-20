@@ -7,9 +7,9 @@ Instead of tapping snooze, you have to solve a short puzzle (math, pattern, or t
 Built with Flutter and Dart.
 
 <p align="center">
-  <img src="nosnoozeScreenshots/noSnooze_image1.jpeg" width="250" />
-  <img src="nosnoozeScreenshots/noSnooze_image2.jpeg" width="250" />
-  <img src="nosnoozeScreenshots/noSnooze_image3.jpeg" width="250" />
+  <img src="nosnoozeScreenshots/noSnooze_image1.jpg" width="250" />
+  <img src="nosnoozeScreenshots/noSnooze_image2.jpg" width="250" />
+  <img src="nosnoozeScreenshots/noSnooze_image3.jpg" width="250" />
 </p>
 
 ## Features
